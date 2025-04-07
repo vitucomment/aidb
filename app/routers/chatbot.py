@@ -7,8 +7,14 @@ from fastapi import Request
 
 router = APIRouter()
 
-from fastapi import Request
+
 @router.post("/chat", tags=["Chatbot"])
-async def chat_with_llm(request: Request, prompt: str = Body(..., embed=True)):
+async def chat_with_llm(
+    request: Request,
+    prompt: str = Body(..., embed=True),
+    session_id: str = Body(..., embed=True)
+):
     agent = request.app.state.agent
-    return run_chat(prompt, agent)
+    conn = request.app.state.conn
+    return await run_chat(prompt, session_id, agent, conn)
+
