@@ -1,9 +1,5 @@
-from fastapi import APIRouter, Body, Depends
-from langchain_ollama import ChatOllama
-from app.core.llm.ollama import get_llm, get_embeddings
-from langchain_community.embeddings import OllamaEmbeddings
+from fastapi import APIRouter, Body, Request
 from app.services.chatbot import run_chat
-from fastapi import Request
 
 router = APIRouter()
 
@@ -14,7 +10,17 @@ async def chat_with_llm(
     prompt: str = Body(..., embed=True),
     session_id: str = Body(..., embed=True)
 ):
+    """
+    Endpoint para interação com o chatbot.
+
+    Args:
+        request (Request): Objeto de requisição FastAPI.
+        prompt (str): Mensagem enviada pelo usuário.
+        session_id (str): Identificador único da sessão do usuário.
+
+    Returns:
+        dict: Resposta gerada pelo chatbot.
+    """
     agent = request.app.state.agent
     conn = request.app.state.conn
     return await run_chat(prompt, session_id, agent, conn)
-

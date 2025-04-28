@@ -2,10 +2,12 @@ from langchain_community.chat_message_histories import PostgresChatMessageHistor
 from langchain.memory import ConversationBufferMemory
 import psycopg
 from langchain_postgres import PostgresChatMessageHistory
+from psycopg_pool import ConnectionPool
 
 POSTGRES_CONN = "postgresql://postgres:innersql@172.20.116.5:5432/postgres"
 CHAT_TABLE = "chat_history"
 
+pool = ConnectionPool(POSTGRES_CONN)
 
 def get_memory(session_id: str) -> ConversationBufferMemory:
     history = PostgresChatMessageHistory(
@@ -25,3 +27,6 @@ def init_psycopg_connection():
 
 def create_chat_history_table(conn):
     PostgresChatMessageHistory.create_tables(conn, CHAT_TABLE)
+
+def get_connection():
+    return pool.getconn()

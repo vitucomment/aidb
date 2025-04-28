@@ -6,7 +6,7 @@ from fastapi import Request, Depends
 def init_ollama_llm():
     """Initialize the Ollama LLM."""
     print("Initializing Ollama LLM...")    
-    llm = ChatOllama(model="llama3.1", temperature=0.7)
+    llm = ChatOllama(model="llama3.1", temperature=0.0)
     return llm
 
 def get_llm(request: Request) -> ChatOllama:
