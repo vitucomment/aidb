@@ -1,29 +1,47 @@
-from langchain.chains import LLMChain
-from langchain.prompts import ChatPromptTemplate
 from langchain_ollama import ChatOllama
+from app.services.tools.get_current_time import get_current_time
+from langchain.agents import create_tool_calling_agent, AgentExecutor
+from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
+
 
 def create_chat_assistant(llm: ChatOllama):
-    prompt = ChatPromptTemplate.from_template(
-    """
-        Você é um assistente de IA conversacional, inteligente e amigável. 
-        Responda diretamente ao usuário com naturalidade, como em um diálogo humano.
+    tools = [get_current_time]
+    prompt = ChatPromptTemplate.from_messages([
+        ("system",
+        """
+        Você é um assistente de IA educado, inteligente e prestativo.
 
-        Considere o histórico da conversa até agora para manter a continuidade:
-        {chat_history}
+        Seu objetivo principal é responder às perguntas dos usuários com base no seu próprio conhecimento.
 
-        Agora responda à nova mensagem do usuário:
-        {question}
+        Você possui acesso a ferramentas externas que podem ser usadas APENAS se for estritamente necessário.
 
-        Instruções importantes:
-        - Responda de forma natural, sem mencionar que o usuário perguntou algo.
-        - Não repita ou reformule a pergunta do usuário.
-        - Seja direto, objetivo e mantenha um tom acolhedor e respeitoso.
-        - Utilize o histórico para contexto, mas responda como em uma conversa normal.
-        - Se não souber a resposta, diga isso de maneira educada e amigável.
+        Instruções:
+        - Se souber a resposta, responda diretamente, com naturalidade e sem mencionar ferramentas ou processos internos.
+        - Só chame uma ferramenta se realmente precisar.
+        - Nunca explique ou diga que vai usar ou não vai usar uma ferramenta.
+        - O usuário nunca deve saber sobre seu processo de pensamento interno.
 
-        Seu objetivo é parecer o mais humano possível durante a conversa.
-    """
+        Seja direto, natural e humano na conversa.
+        """
+        ),
+        MessagesPlaceholder(variable_name="chat_history"),
+        ("human", "{question}"),
+        MessagesPlaceholder(variable_name="agent_scratchpad"),
+    ])
+
+    agent = create_tool_calling_agent(
+        llm=llm,
+        tools=tools,
+        prompt=prompt
     )
 
-    chain = prompt | llm
-    return chain
+    agent_executor = AgentExecutor(
+        agent=agent,
+        tools=tools,
+        verbose=True,
+        handle_parsing_errors=True
+    )
+
+    return agent_executor
+
+

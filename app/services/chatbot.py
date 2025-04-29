@@ -10,13 +10,19 @@ def build_memory(session_id: str, conn) -> ConversationBufferMemory:
 
 async def run_chat(prompt: str, session_id: str, agent, conn) -> dict:
     memory = build_memory(session_id, conn)
-    response = await agent.ainvoke(
+
+    agent_response = await agent.ainvoke(
         {
             "question": prompt,
             "chat_history": memory.chat_memory.messages
         }
     )
-    
+
     memory.chat_memory.add_user_message(prompt)
-    memory.chat_memory.add_ai_message(response)
-    return {"response": response}
+
+    ai_text = agent_response.get("output", "") if isinstance(agent_response, dict) else str(agent_response)
+    memory.chat_memory.add_ai_message(ai_text)
+
+    return {"response": ai_text}
+
+
