@@ -1,3 +1,14 @@
-tests/
+
 .env
 **/__pycache__/
+
+
+# Ignorar ambientes virtuais
+.venv/
+venv/
+
+# Ignorar __pycache__ e arquivos compilados
+__pycache__/
+*.py[cod]
+
+tests/
